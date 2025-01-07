@@ -1,4 +1,7 @@
 #include "player.h"
+#include "card.h"
+
+
 
 Player::Player(){
     //initalize *decks
@@ -17,7 +20,7 @@ vector<int> Player::calculateHand(){
         //check cards except for aces
         int sum = 0;
         for(auto c : *hand){
-                sum += getCardValueInt(c, sum);
+                sum += getCardValueInt(c,sum);
             }
 
         result.push_back(sum);

@@ -1,6 +1,8 @@
 #include "deck.cpp"
 #include "player.cpp"
-#include <SDL2/SDL.h>
+#include "SDLManager.cpp"
+#include "game.h"
+
 //generate deck
 //update to allow for different difficulties(i.e. different sized decks)
 deck thisDeck;
@@ -11,7 +13,7 @@ bettingMan thisPlayer = bettingMan();
 //no need for update
 Dealer thisDealer = Dealer();
 //gameState
-bool gameState = true;
+bool *gameState = new bool(true);
 //checks for reshuffle
 bool reshuffle = false;
 //dealer check
@@ -20,9 +22,8 @@ bool dealerWin = false;
 bool push = false;
 //blackjack check
 bool blackjack = false;
-//initalize renderer
-static SDL_Renderer* renderer;
-SDL_Window *window;
+//create SDLManager
+SDLManager *thisSDL = new SDLManager();
 
 void deal(){
     int dealCount = 0;
@@ -44,29 +45,39 @@ void deal(){
     //
 }
 
-int main(){
-    if (SDL_Init(SDL_INIT_EVERYTHING)== 0) {
-		cout << "Subsystems Initialized!.." << endl;
 
-		window = SDL_CreateWindow("FUCK", 0, 0, 1920, 1080, SDL_WINDOW_FULLSCREEN);
-
-		if (window != nullptr) {
-			cout << "Window Created" << endl;
-		}
-
-		renderer = SDL_CreateRenderer(window, -1, 0);
-
-		if (renderer != nullptr) {
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			cout << "Renderer created!" << endl;
-		}
+void events(){
+    SDL_Event thisEvent;
+    //cout << "In Thread(event loop) " <<  this_thread::get_id();
+    //while(*gameState){}
+    while(SDL_PollEvent(&thisEvent) != 0){
+        //thisEvent = thisSDL->pollEvent();
+        switch(thisEvent.type){
+            case SDL_QUIT:
+                cout << "\nSDL quit occured";
+                *gameState = false;
+                break;
+            case SDL_KEYDOWN:
+                if(thisEvent.key.keysym.sym == SDLK_f){
+                cout << "\nF key pressed!\n";
+                thisSDL->update();
+                }
+            default:
+                break;
+        }
     }
-    //shuffle cards before start
-    //should be changed if difficulties are added
-    thisDeck.shuffle(20);
-    //game runs until player decides to quit
+}
+
+// void SDLUpdate(){
     
-    while(gameState){
+//     while(*gameState){
+//         cout << "\nUpdate thread created";
+//         thisSDL->update();
+//     }
+// }
+
+void gameLogic(){
+    while(*gameState){
         //reshuffle is necessary
         if(reshuffle){
             thisDeck.shuffle(20);
@@ -92,6 +103,7 @@ int main(){
             blackjack = false;
             cout << "\nYou have ";
             thisPlayer.printCards();
+            thisSDL->drawCard(thisPlayer.getHand()->at(0)->at(0), 0);
             cout << "\n1.) Hit\n2.) Stand\n";
             int playerDecision;
             cin >> playerDecision;
@@ -161,10 +173,42 @@ int main(){
             }
             thisPlayer.resetHand();
             thisDealer.resetHand();
-
         }
+}
 
+void preDraw(){
+    thisSDL->pDraw();
+}
 
+void draw(){
+    thisSDL->draw();
+}
+
+int main(){
+
+    //shuffle cards before start
+    //should be changed if difficulties are added
+    thisDeck.shuffle(20);
+    //game runs until player decides to quit
+    //init vertex spec
+    thisSDL->VertexSpecification();
+    //create graphics pipeline
+    thisSDL->createGraphicsPipeline();
+    
+
+    //events thread
+    thread gameL(gameLogic);
+    while(*gameState){
+        //main loop
+        events();
+        //thread sdlWindow(SDLUpdate);
+        preDraw();
+        //cout << "\nIn Thread(Game loop) " <<  this_thread::get_id();
+        draw();
+    }
+    gameL.join();
+    // sdlWindow.join();
+    delete(thisSDL);
     // }
     return 0;
 }

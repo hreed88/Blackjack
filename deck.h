@@ -1,13 +1,10 @@
-#ifndef DECK_H
-#define DECK_H
+#ifndef DECK_H_
+#define DECK_H_
 #include <vector>
 #include <tuple>
 #include <random>
 #include "card.h"
 using namespace std;
-
-
-
 class deck{
     public:
         deck(); //initalize a deck of size 1

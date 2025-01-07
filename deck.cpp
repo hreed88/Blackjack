@@ -1,4 +1,5 @@
 #include "deck.h"
+#include "card.h"
 
 deck::deck(){
     thisDeck = new vector<card>();

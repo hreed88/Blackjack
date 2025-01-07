@@ -1,8 +1,7 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef PLAYER_H_
+#define PLAYER_H_
 
 #include "card.h"
-
 
 class Player{
     public:
